@@ -8,7 +8,7 @@ before_script:
   - npm install nyc --global
 script:
   - npm run build
-  - nyc npm test
+  - nyc npm test -- -v
 after_success:
   - npm install coveralls@~3.0.0 --global
   - nyc report --reporter=text-lcov | coveralls
@@ -21,7 +21,8 @@ os:
 stages:
   - lint
   - test
-  - deploy
+  - "step and deploy releases"
+  - deploy npm
 jobs:
   include:
     - node_js: lts/*
@@ -35,9 +36,24 @@ jobs:
         provider: npm
         email: arylo.open+npm@gmail.com
         api_key: "${NPM_TOKEN}"
-        "on":
-          branch: master
+        on:
+          tag: true
       node_js: lts/*
       os: linux
       script: skip
-      stage: deploy
+      stage: deploy npm
+    - deploy:
+        skip_cleanup: true
+        provider: releases
+        file: version-lock.json
+        api_key: "${GIT_TOKEN}"
+        on:
+          branch: master
+      node_js: lts/*
+      os: linux
+      script:
+        - "npm install"
+        - "npm run clean"
+        - "npm run build:prod"
+        - "node ./dist/cli --tag --push --username ${GIT_TOKEN} lib bin README.md package.json"
+      stage: "step and deploy releases"
