@@ -21,14 +21,14 @@ os:
 stages:
   - lint
   - test
-  - "step and deploy releases"
+  # - "step and deploy releases"
   - deploy npm
 jobs:
   include:
     - node_js: lts/*
       os: linux
       script:
-        - npm run lint
+        - npm run lint:typescript
       stage: lint
     - stage: test
     - deploy:
@@ -42,18 +42,18 @@ jobs:
       os: linux
       script: skip
       stage: deploy npm
-    - deploy:
-        skip_cleanup: true
-        provider: releases
-        file: version-lock.json
-        api_key: "${GIT_TOKEN}"
-        on:
-          branch: master
-      node_js: lts/*
-      os: linux
-      script:
-        - "npm install"
-        - "npm run clean"
-        - "npm run build:prod"
-        - "node ./dist/cli --tag --push --username ${GIT_TOKEN} lib bin README.md package.json"
-      stage: "step and deploy releases"
+    # - deploy:
+    #     skip_cleanup: true
+    #     provider: releases
+    #     file: version-lock.json
+    #     api_key: "${GIT_TOKEN}"
+    #     on:
+    #       branch: master
+    #   node_js: lts/*
+    #   os: linux
+    #   script:
+    #     - "npm install"
+    #     - "npm run clean"
+    #     - "npm run build:prod"
+    #     - "node ./dist/cli --tag --push --username ${GIT_TOKEN} lib bin README.md package.json"
+    #   stage: "step and deploy releases"
