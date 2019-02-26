@@ -14,10 +14,10 @@
     "build:prod": "npm run tsc -- -P tsconfig.prod.json",
     "build:test": "npm run tsc -- -P tsconfig.test.json",
     "pretest": "npm run clean && npm run build:test",
-    "test": "ava dist/test/**/*.{spec,e2e}.js",
-    "lint": "npm run lint:typescript && npm run lint:javascript",
+    "test": "ava dist/test/**/*.{spec,e2e}.js -v",
+    "lint": "npm run lint:javascript && npm run lint:typescript",
     "lint:typescript": "tslint {lib,test}/**/*.ts",
-    "lint:javascript": "eslint ./**/*.js"
+    "lint:javascript": "eslint --quiet ./**/*.js"
   },
   "keywords": [
     "arylo",

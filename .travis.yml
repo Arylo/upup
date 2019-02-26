@@ -8,7 +8,7 @@ before_script:
   - npm install nyc --global
 script:
   - npm run build
-  - nyc npm test -- -v
+  - nyc npm test
 after_success:
   - npm install coveralls@~3.0.0 --global
   - nyc report --reporter=text-lcov | coveralls
@@ -28,7 +28,7 @@ jobs:
     - node_js: lts/*
       os: linux
       script:
-        - npm run lint:typescript
+        - npm run lint
       stage: lint
     - stage: test
     - deploy:
