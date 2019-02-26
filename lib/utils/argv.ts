@@ -57,5 +57,10 @@ export function parse<T extends tPAO>(argvs: string[], conf: T) {
         }
     }
 
+    index = argv.indexOf("--");
+    if (index !== -1) {
+        argv = argv.slice(index + 1);
+    }
+
     return Object.assign({ "--": argv }, obj as tArgvObj<T>);
 }
