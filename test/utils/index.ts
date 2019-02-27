@@ -9,7 +9,7 @@ export function sleep(time: number) {
 }
 
 export function handler(argv: string[]) {
-    return h(argv).then(() => sleep(1000));
+    return h(["node", "upup", ...argv]).then(() => sleep(1000));
 }
 
 export function getFileVersion(filepath: fs.PathLike) {

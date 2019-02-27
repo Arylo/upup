@@ -1,5 +1,5 @@
 import test from "ava";
-import { argv, md5, version } from "./../lib/utils";
+import { argv, md5, version } from "../../lib/utils";
 
 test("MD5 Utils", (t) => {
     t.true(typeof md5 === "object");

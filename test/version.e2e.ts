@@ -2,17 +2,16 @@ import test from "ava";
 import ftconfig = require("ftconfig");
 import * as path from "path";
 import { parse, stringify } from "../lib/utils/version";
-import { getFileVersion, handler } from "./utils";
+import * as utils from "./utils";
 import { EC, newProjectBeforeMacro } from "./utils/macroes";
 
 test.serial.beforeEach("New Project", newProjectBeforeMacro);
 
 test.serial.beforeEach(async (t: EC) => {
-    await handler(["node", "upup", "--cwd", t.context.projectPath, "lib"]);
-    ftconfig
-        .readFile(path.resolve(t.context.projectPath, "lib/index.ts"))
-        .modify((str) => "(() => { console.log('');})()")
-        .save();
+    await utils.handler(["--cwd", t.context.projectPath, "lib"]);
+    await utils.file.modify(
+        path.resolve(t.context.projectPath, "lib/index.ts")
+    );
 });
 
 test("Step Version", async (t: EC) => {
@@ -20,14 +19,14 @@ test("Step Version", async (t: EC) => {
         lock: path.resolve(t.context.projectPath, "version-lock.json"),
         pkg: path.resolve(t.context.projectPath, "package.json")
     };
-    const version = getFileVersion(filepathMap.pkg);
+    const version = utils.getFileVersion(filepathMap.pkg);
 
-    await handler(["node", "upup", "--cwd", t.context.projectPath, "lib"]);
+    await utils.handler(["--cwd", t.context.projectPath, "lib"]);
 
     const versionObjMap = {
-        lock: parse(getFileVersion(filepathMap.lock)),
+        lock: parse(utils.getFileVersion(filepathMap.lock)),
         old: parse(version),
-        pkg: parse(getFileVersion(filepathMap.pkg))
+        pkg: parse(utils.getFileVersion(filepathMap.pkg))
     };
     versionObjMap.old.patch++;
     t.deepEqual(versionObjMap.lock, versionObjMap.old);
@@ -39,7 +38,7 @@ test("Skip Step Version because difference major", async (t: EC) => {
         lock: path.resolve(t.context.projectPath, "version-lock.json"),
         pkg: path.resolve(t.context.projectPath, "package.json")
     };
-    const version = getFileVersion(filepathMap.pkg);
+    const version = utils.getFileVersion(filepathMap.pkg);
 
     ftconfig
         .readFile(filepathMap.pkg)
@@ -50,12 +49,12 @@ test("Skip Step Version because difference major", async (t: EC) => {
             return obj;
         })
         .save();
-    await handler(["node", "upup", "--cwd", t.context.projectPath, "lib"]);
+    await utils.handler(["--cwd", t.context.projectPath, "lib"]);
 
     const versionObjMap = {
-        lock: parse(getFileVersion(filepathMap.lock)),
+        lock: parse(utils.getFileVersion(filepathMap.lock)),
         old: parse(version),
-        pkg: parse(getFileVersion(filepathMap.pkg))
+        pkg: parse(utils.getFileVersion(filepathMap.pkg))
     };
     t.notDeepEqual(versionObjMap.lock, versionObjMap.old);
     t.notDeepEqual(versionObjMap.pkg, versionObjMap.old);
@@ -67,7 +66,7 @@ test("Skip Step Version because difference minor", async (t: EC) => {
         lock: path.resolve(t.context.projectPath, "version-lock.json"),
         pkg: path.resolve(t.context.projectPath, "package.json")
     };
-    const version = getFileVersion(filepathMap.pkg);
+    const version = utils.getFileVersion(filepathMap.pkg);
 
     ftconfig
         .readFile(filepathMap.pkg)
@@ -78,12 +77,12 @@ test("Skip Step Version because difference minor", async (t: EC) => {
             return obj;
         })
         .save();
-    await handler(["node", "upup", "--cwd", t.context.projectPath, "lib"]);
+    await utils.handler(["--cwd", t.context.projectPath, "lib"]);
 
     const versionObjMap = {
-        lock: parse(getFileVersion(filepathMap.lock)),
+        lock: parse(utils.getFileVersion(filepathMap.lock)),
         old: parse(version),
-        pkg: parse(getFileVersion(filepathMap.pkg))
+        pkg: parse(utils.getFileVersion(filepathMap.pkg))
     };
     t.notDeepEqual(versionObjMap.lock, versionObjMap.old);
     t.notDeepEqual(versionObjMap.pkg, versionObjMap.old);
