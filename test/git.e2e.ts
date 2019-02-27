@@ -1,14 +1,13 @@
 import test from "ava";
-import ftconfig = require("ftconfig");
 import * as path from "path";
 import simpleGit = require("simple-git/promise");
-import { parse, stringify } from "../lib/utils/version";
-import { getFileVersion, handler } from "./utils";
+import { handler } from "./utils";
+import * as utils from "./utils";
 import { EC, newProjectBeforeMacro } from "./utils/macroes";
 
 test.serial.beforeEach("New Project", newProjectBeforeMacro);
 
-test("Git Commit #1", async (t: EC) => {
+test.serial("Git Commit #1", async (t: EC) => {
     await handler([
         "node",
         "upup",
@@ -25,7 +24,7 @@ test("Git Commit #1", async (t: EC) => {
     t.is((await git.log()).total, 1);
 });
 
-test("Git Commit #2", async (t: EC) => {
+test.serial("Git Commit #2", async (t: EC) => {
     await handler([
         "node",
         "upup",
@@ -35,10 +34,7 @@ test("Git Commit #2", async (t: EC) => {
         "lib"
     ]);
 
-    ftconfig
-        .readFile(path.resolve(t.context.projectPath, "lib/index.ts"))
-        .modify((str) => "(() => { console.log('');})()")
-        .save();
+    utils.file.modify(path.resolve(t.context.projectPath, "lib/index.ts"));
 
     await handler([
         "node",
@@ -57,7 +53,7 @@ test("Git Commit #2", async (t: EC) => {
     t.is((await git.log()).total, 2);
 });
 
-test("Git Commit #3", async (t: EC) => {
+test.serial("Git Commit #3", async (t: EC) => {
     await handler([
         "node",
         "upup",
@@ -67,10 +63,8 @@ test("Git Commit #3", async (t: EC) => {
         "lib"
     ]);
 
-    ftconfig
-        .readFile(path.resolve(t.context.projectPath, "lib/index.ts"))
-        .modify((str) => "(() => { console.log('');})()")
-        .save();
+    utils.file.modify(path.resolve(t.context.projectPath, "lib/index.ts"));
+
     const git = simpleGit();
     await git.cwd(t.context.projectPath);
     await git.add("lib/index.ts");
@@ -88,4 +82,49 @@ test("Git Commit #3", async (t: EC) => {
     t.deepEqual(status.not_added, ["version-lock.json"]);
     t.deepEqual(status.modified, []);
     t.is((await git.log()).total, 3);
+});
+
+test.serial("Git Tag #0", async (t: EC) => {
+    await handler([
+        "node",
+        "upup",
+        "--tag",
+        "--cwd",
+        t.context.projectPath,
+        "lib"
+    ]);
+    const git = simpleGit();
+    await git.cwd(t.context.projectPath);
+    // Auto Commit
+    t.is((await git.log()).total, 1);
+    // Tag
+    t.is((await git.tags()).latest, "v1.0.0");
+});
+
+test.serial("Git Tag #1", async (t: EC) => {
+    await handler([
+        "node",
+        "upup",
+        "--tag",
+        "--cwd",
+        t.context.projectPath,
+        "lib"
+    ]);
+
+    await utils.file.modify(
+        path.resolve(t.context.projectPath, "lib/index.ts")
+    );
+    await utils.git.commit(t.context.projectPath, "Modify");
+    await handler([
+        "node",
+        "upup",
+        "--tag",
+        "--cwd",
+        t.context.projectPath,
+        "lib"
+    ]);
+
+    const git = simpleGit();
+    await git.cwd(t.context.projectPath);
+    t.is((await git.tags()).latest, "v1.0.1");
 });

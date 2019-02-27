@@ -13,6 +13,7 @@ class Config {
     private targets: string[] = [];
     private gitUsername: string = null;
     private gitPassword: string = null;
+    private version = "0.0.0";
 
     public getCwd() {
         return this.cwd;
@@ -77,6 +78,13 @@ class Config {
             arr = [arr];
         }
         this.targets.push(...arr);
+    }
+
+    public getVersion() {
+        return this.version;
+    }
+    public setVersion(val: string) {
+        this.version = val;
     }
 
     public getGitUsername() {

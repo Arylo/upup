@@ -1,9 +1,10 @@
 import simpleGit = require("simple-git/promise");
 import { URL } from "url";
 import config = require("../config");
-import { version as ver } from "./version";
 
 export const handler = async () => {
+    const ver = config.getVersion();
+
     if (config.isCommit()) {
         const msg = `ci(release): step version to v${ver}`;
         const git = simpleGit();
@@ -25,6 +26,9 @@ export const handler = async () => {
         const remote = (await git.getRemotes(true))[0];
         const url = new URL(remote.refs.push);
         url.username = config.getGitUsername();
+        if (config.getGitPassword()) {
+            url.password = config.getGitPassword();
+        }
         await git.removeRemote(remote.name);
         await git.addRemote(remote.name, url.href);
     }

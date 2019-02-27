@@ -5,8 +5,6 @@ import config = require("../config");
 import { ILockFile } from "../types/lock";
 import * as utils from "../utils";
 
-export let version = "0.0.0";
-
 export const handler = () => {
     const filepathMap = {
         lock: path.resolve(config.getCwd(), config.getLockFilename()),
@@ -14,8 +12,8 @@ export const handler = () => {
     };
 
     // region Build Lock Object
-    let { version: ver } = ftconfig.readFile(filepathMap.pkg).toObject();
-    version = ver;
+    const { version: ver } = ftconfig.readFile(filepathMap.pkg).toObject();
+    config.setVersion(ver);
     const md5sum = utils.md5.str(
         config
             .getTargets()
@@ -48,14 +46,14 @@ export const handler = () => {
         verMap.lock.patch <= verMap.pkg.patch
     ) {
         verMap.pkg.patch++;
-        ver = utils.version.stringify(verMap.pkg);
+        config.setVersion(utils.version.stringify(verMap.pkg));
     }
     // endregion Step Version
 
     ftconfig
         .read<ILockFile>(JSON.stringify(lockObj), "json")
         .modify((obj) => {
-            obj.version = ver;
+            obj.version = config.getVersion();
             obj.date = Date.now();
             return obj;
         })
@@ -64,7 +62,7 @@ export const handler = () => {
     ftconfig
         .readFile(filepathMap.pkg)
         .modify((obj) => {
-            obj.version = ver;
+            obj.version = config.getVersion();
             return obj;
         })
         .save();
